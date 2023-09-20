@@ -141,7 +141,7 @@ public class KnapsackBRKGA {
         System.out.println("Itens selecionados para serem colocados na mochila:");
         for (int i = 0; i < numItems; i++) {
             if (best.genes[i] > 0.5) {
-                System.out.println("Item " + (i + 1) + ": Valor = " + values[i] + ", Peso = " + weights[i]);
+                System.out.println("Item" + ": Valor = " + values[i] + ", Peso = " + weights[i]);
             }
         }
     }
