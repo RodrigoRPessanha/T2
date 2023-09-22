@@ -4,10 +4,14 @@ import java.io.*;
 
 public class KnapsackBRKGA {
 
+    // Para 4 itens usar POP_SIZE = 100 e NUM_GENERATIONS = 200
+    // Para 30 itens usar POP_SIZE = 3000 e NUM_GENERATIONS = 5000
+    // Para 40 itens usar POP_SIZE = 20000 e NUM_GENERATIONS = 15000 (não funciona ainda)
+
     // Parâmetros do algoritmo genético
     private static final int POP_SIZE = 100;              // Tamanho da população
     private static final int NUM_GENERATIONS = 200;       // Número de gerações
-    private static final double MUTATION_RATE = 0.02;     // Taxa de mutação
+    private static final double MUTATION_RATE = 0.01;     // Taxa de mutação
     private static final double ELITE_RATE = 0.1;         // Percentual de indivíduos elite
 
     // Dados do problema
@@ -27,7 +31,8 @@ public class KnapsackBRKGA {
         this.numItems = Integer.parseInt(scanner.nextLine().trim());
         this.weights = new double[numItems];
         this.values = new double[numItems];
-
+        System.out.println("Capacidade: "+capacity);
+        System.out.println("Quantidade de itens: "+ numItems);
         // Lendo o valor e o peso de cada item
         for (int i = 0; i < numItems; i++) {
             String[] line = scanner.nextLine().trim().split(" ");
@@ -58,6 +63,27 @@ public class KnapsackBRKGA {
         public int compareTo(Individual other) {
             return Double.compare(other.fitness, this.fitness); // Ordem decrescente
         }
+    }
+
+    public long calculateTimeComplexity() {
+        long totalOperations = 0;
+        // Inicialização da população
+        totalOperations += POP_SIZE * numItems;
+        // Execução das gerações
+        for (int generation = 0; generation < NUM_GENERATIONS; generation++) {
+            // Ordenação da população
+            totalOperations += POP_SIZE * log2(POP_SIZE); // log2 é uma função para calcular logaritmo na base 2
+            // Elitismo
+            totalOperations += ELITE_RATE * POP_SIZE * numItems;
+            // Crossover e mutação
+            totalOperations += (POP_SIZE - ELITE_RATE * POP_SIZE) * (numItems * 2); // Considera crossover e mutação
+        }
+
+        return totalOperations;
+    }
+
+    private double log2(double x) {
+        return Math.log(x) / Math.log(2);
     }
 
     // Método para calcular o fitness (valor) de uma solução
@@ -138,22 +164,40 @@ public class KnapsackBRKGA {
 
         // Imprimindo os itens selecionados do melhor indivíduo
         Individual best = population.get(0);
-        System.out.println("Itens selecionados para serem colocados na mochila:");
+        System.out.println("\nItens selecionados para serem colocados na mochila:");
+        int soma = 0;
+        int j = 0;
         for (int i = 0; i < numItems; i++) {
             if (best.genes[i] > 0.5) {
                 System.out.println("Item" + ": Valor = " + values[i] + ", Peso = " + weights[i]);
+                soma += weights[i];
+                j += values[i];
             }
         }
+        System.out.println("\nValor Total: " + j + "\nPeso Total: " + soma);
     }
 
     // Método principal para execução
     public static void main(String[] args) throws FileNotFoundException {
+        long startTime = System.currentTimeMillis();
+
         // Executando o algoritmo
         try {
-            KnapsackBRKGA knapsackBRKGA = new KnapsackBRKGA("src/c.txt");
+            // KnapsackBRKGA knapsackBRKGA = new KnapsackBRKGA("C:\\Users\\Rodrigo\\Desktop\\a/10k.txt");
+            KnapsackBRKGA knapsackBRKGA = new KnapsackBRKGA("src/teste.txt");
+            // Calcular a complexidade de tempo
+            long timeComplexity = knapsackBRKGA.calculateTimeComplexity();
+            
+            // Imprimir a complexidade de tempo
+            System.out.println("Número total de operações: " + timeComplexity);
             knapsackBRKGA.run();
-        } catch (Exception e) {
+        } catch (FileNotFoundException e) {
             System.out.println("Arquivo não encontrado");
+        } catch (Exception e) {
+            System.out.println("Erro: "+e.getMessage());
         }
+
+        long finishTime = System.currentTimeMillis();
+        System.out.print("\nRun time: " + (finishTime - startTime) / 1000f);
     }
 }
